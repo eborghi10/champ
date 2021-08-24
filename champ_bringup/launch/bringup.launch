@@ -40,8 +40,8 @@
 
         <node if="$(arg lite)" pkg="champ_base" name="message_relay" type="message_relay_node" output="screen">
             <param                        name="gazebo"  value="$(arg gazebo)" />
-            <param if="$(arg gazebo)"     name="has_imu" value="false"/>       
-            <param unless="$(arg gazebo)" name="has_imu" value="$(arg has_imu)"/>       
+            <param if="$(arg gazebo)"     name="has_imu" value="false"/>
+            <param unless="$(arg gazebo)" name="has_imu" value="$(arg has_imu)"/>
         </node>
 
         <!-- ==================== CONTROLLER ==================== -->
@@ -58,20 +58,21 @@
 
         <!-- ==================== STATE ESTIMATION ==================== -->
         <node pkg="champ_base" name="state_estimator" type="state_estimation_node" output="screen">
-            <param name="close_loop_odom" value="$(arg close_loop_odom)" />
+            <param if="$(arg hardware_connected)" name="orientation_from_imu" value="true"/>
+            <param if="$(arg gazebo)" name="orientation_from_imu" value="true"/>
         </node>
 
-        <node pkg="robot_localization" type="ekf_localization_node" name="base_to_footprint_ekf"> 
+        <node pkg="robot_localization" type="ekf_localization_node" name="base_to_footprint_ekf">
             <remap from="odometry/filtered" to="odom/local" />
             <param name="base_link_frame" value="$(arg base_frame)" />
             <rosparam command="load" file="$(find champ_base)/config/ekf/base_to_footprint.yaml" />
         </node>
 
-        <node pkg="robot_localization" type="ekf_localization_node" name="footprint_to_odom_ekf"> 
+        <node pkg="robot_localization" type="ekf_localization_node" name="footprint_to_odom_ekf">
             <remap from="odometry/filtered" to="odom" />
             <rosparam command="load" file="$(find champ_base)/config/ekf/footprint_to_odom.yaml" />
         </node>
-        
+
         <node if="$(arg rviz)" name="rviz" pkg="rviz" type="rviz"
             args="-d $(find champ_description)/rviz/urdf_viewer.rviz -f $(arg rviz_ref_frame)"
             output="screen"/>
